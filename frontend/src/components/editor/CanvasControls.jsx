@@ -8,7 +8,7 @@ import {
   Maximize,
   Square,
   Circle,
-  Scissors
+  Shapes
 } from 'lucide-react';
 
 /**
@@ -115,8 +115,8 @@ export default function CanvasControls({
           
           <ControlButton
             onClick={() => onShapeChange?.('custom')}
-            title="Custom die cut (follows image shape)"
-            icon={Scissors}
+            title="Custom die cut (follows image contour)"
+            icon={Shapes}
             active={shape === 'custom'}
             disableOverride={false}
           />
@@ -124,8 +124,8 @@ export default function CanvasControls({
         
         {/* Shape Info */}
         {shape === 'custom' && (
-          <div className="ml-2 text-xs text-gray-600 max-w-[200px]">
-            Upload images with transparent backgrounds for custom shapes
+          <div className="ml-2 text-xs text-amber-600 font-medium max-w-[200px]">
+            Cut follows your design shape (transparent PNG recommended)
           </div>
         )}
       </div>

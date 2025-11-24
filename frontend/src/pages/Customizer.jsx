@@ -9,7 +9,10 @@ import {
   AlertCircle,
   FileImage,
   Lightbulb,
-  Download
+  Download,
+  ChevronDown,
+  ChevronUp,
+  Sparkles
 } from 'lucide-react';
 
 import {
@@ -76,6 +79,7 @@ export default function Customizer() {
   // UI state
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [cartSuccess, setCartSuccess] = useState(false);
+  const [showMobileOptions, setShowMobileOptions] = useState(false);
 
   // Get product dimensions for canvas
   const productDimensions = parseSizeDimensions(selectedSize);
@@ -264,24 +268,109 @@ export default function Customizer() {
       <div className="bg-gray-50 min-h-[calc(100vh-140px)]">
         {/* Page Title */}
         <div className="bg-white border-b border-gray-200">
-          <div className="container-custom py-4">
-            <h1 className="text-2xl font-bold text-graphite">
-              Custom <span className="gradient-text">Design Studio</span>
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Upload your design and create custom stickers or magnets
-            </p>
+          <div className="container-custom py-3 md:py-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-cool-blue hidden sm:block" />
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold text-graphite">
+                  Custom <span className="gradient-text">Design Studio</span>
+                </h1>
+                <p className="text-xs md:text-sm text-gray-500 mt-0.5">
+                  Upload your design and create custom stickers or magnets
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Main Content - 3 Panel Layout */}
-        <div className="container-custom py-6">
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* LEFT PANEL - Product Options (30%) */}
+        {/* Main Content - Responsive Layout */}
+        <div className="container-custom py-4 md:py-6">
+          <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
+
+            {/* MOBILE: Collapsible Options Header */}
+            <div className="lg:hidden">
+              <button
+                onClick={() => setShowMobileOptions(!showMobileOptions)}
+                className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-soft"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-soft-sky rounded-lg flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-cool-blue" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-graphite text-sm">
+                      {productType === PRODUCT_TYPES.STICKERS ? 'Stickers' :
+                       productType === PRODUCT_TYPES.FRIDGE_MAGNETS ? 'Fridge Magnets' : 'Die-Cut Magnets'}
+                      {' '}&bull;{' '}{selectedSize}"
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Qty: {selectedQuantity} &bull; ${currentPrice?.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+                {showMobileOptions ? (
+                  <ChevronUp className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+
+              {/* Collapsible Options Panel */}
+              <AnimatePresence>
+                {showMobileOptions && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-4 space-y-4">
+                      {/* Product Type Tabs - Mobile */}
+                      <div className="bg-white rounded-xl p-4 shadow-soft">
+                        <ProductTypeTabs
+                          activeType={productType}
+                          onChange={handleProductTypeChange}
+                        />
+                      </div>
+
+                      {/* Size & Quantity - Mobile */}
+                      <div className="bg-white rounded-xl p-4 shadow-soft">
+                        <SizeQuantitySelector
+                          productType={productType}
+                          selectedSize={selectedSize}
+                          onSizeChange={handleSizeChange}
+                          selectedQuantity={selectedQuantity}
+                          onQuantityChange={setSelectedQuantity}
+                          disabled={isUploading}
+                        />
+                      </div>
+
+                      {/* Price Display - Mobile */}
+                      <PriceDisplay
+                        productType={productType}
+                        size={selectedSize}
+                        quantity={selectedQuantity}
+                      />
+
+                      {/* Instructions - Mobile */}
+                      <div className="bg-white rounded-xl p-4 shadow-soft">
+                        <InstructionsInput
+                          value={instructions}
+                          onChange={setInstructions}
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* LEFT PANEL - Product Options (Desktop Only) */}
             <motion.aside
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="w-full lg:w-[30%] lg:min-w-[320px] space-y-6"
+              className="hidden lg:block w-full lg:w-[30%] lg:min-w-[320px] space-y-6"
             >
               {/* Product Type Tabs */}
               <div className="bg-white rounded-2xl p-6 shadow-soft">
@@ -319,7 +408,7 @@ export default function Customizer() {
               </div>
 
               {/* Add to Cart - Sticky on desktop */}
-              <div className="hidden lg:block sticky bottom-6">
+              <div className="sticky bottom-6">
                 <motion.button
                   onClick={handleAddToCart}
                   disabled={!hasImage || isAddingToCart}
@@ -382,15 +471,15 @@ export default function Customizer() {
               </div>
             </motion.aside>
 
-            {/* CENTER PANEL - Canvas Editor (50%) */}
+            {/* CENTER PANEL - Canvas Editor */}
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="flex-1 lg:w-[50%] space-y-4"
+              className="flex-1 lg:w-[50%] space-y-3 md:space-y-4"
             >
               {/* Canvas Area */}
-              <div className="bg-white rounded-2xl shadow-soft overflow-hidden relative">
+              <div className="bg-white rounded-xl md:rounded-2xl shadow-soft overflow-hidden relative">
                 <ImageCanvas
                   ref={canvasRef}
                   productSize={productDimensions}
@@ -398,11 +487,11 @@ export default function Customizer() {
                   rotation={rotation}
                   showGrid={showGrid}
                   shape={shape}
-                  className="min-h-[450px]"
+                  className="min-h-[320px] md:min-h-[420px]"
                 />
 
                 {!hasImage && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/95 p-8">
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/95 p-4 md:p-8">
                     <UploadZone
                       onFileSelect={handleFileUpload}
                       isLoading={isUploading}
@@ -429,32 +518,71 @@ export default function Customizer() {
                 disabled={!hasImage}
               />
 
-              {/* Mobile Add to Cart */}
-              <div className="lg:hidden">
+              {/* Mobile Add to Cart - Fixed at bottom */}
+              <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-lg z-40">
                 <motion.button
                   onClick={handleAddToCart}
                   disabled={!hasImage || isAddingToCart}
+                  whileTap={{ scale: 0.98 }}
                   className={`
-                    w-full py-4 px-6 rounded-xl font-bold text-lg
+                    w-full py-3.5 px-6 rounded-xl font-bold text-base
                     flex items-center justify-center gap-3
+                    transition-all duration-300 shadow-md
                     ${hasImage
                       ? 'bg-gradient-to-r from-cool-blue to-deep-indigo text-white'
                       : 'bg-gray-300 text-gray-500'
                     }
                   `}
                 >
-                  <ShoppingCart className="w-5 h-5" />
-                  Add to Cart - ${currentPrice?.toFixed(2)}
+                  <AnimatePresence mode="wait">
+                    {isAddingToCart ? (
+                      <motion.span
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center gap-2"
+                      >
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Adding...
+                      </motion.span>
+                    ) : cartSuccess ? (
+                      <motion.span
+                        key="success"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center gap-2"
+                      >
+                        <CheckCircle className="w-5 h-5" />
+                        Added to Cart!
+                      </motion.span>
+                    ) : (
+                      <motion.span
+                        key="default"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center gap-2"
+                      >
+                        <ShoppingCart className="w-5 h-5" />
+                        Add to Cart - ${currentPrice?.toFixed(2)}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </motion.button>
               </div>
+
+              {/* Spacer for mobile fixed button */}
+              <div className="lg:hidden h-20" />
             </motion.section>
 
-            {/* RIGHT PANEL - Upload & Tips (20%) */}
+            {/* RIGHT PANEL - Upload & Tips (Desktop) */}
             <motion.aside
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="w-full lg:w-[20%] lg:min-w-[260px] space-y-6"
+              className="hidden lg:block w-full lg:w-[20%] lg:min-w-[260px] space-y-6"
             >
               {/* File Upload Area (when image exists) */}
               {hasImage && (
