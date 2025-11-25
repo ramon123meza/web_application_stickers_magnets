@@ -8,14 +8,17 @@ import {
   Maximize,
   Square,
   Circle,
-  Shapes
+  Shapes,
+  FlipHorizontal,
+  FlipVertical
 } from 'lucide-react';
 
 /**
  * CanvasControls - Control toolbar for canvas manipulation
  *
  * Features:
- * - Shape selection (square, round, custom die cut)
+ * - Shape selection (square, round, custom die cut) - for stickers/die-cut magnets only
+ * - Orientation toggle for fridge magnets
  * - Rotate buttons (CCW, CW)
  * - Reset button
  * - Grid toggle
@@ -33,8 +36,12 @@ export default function CanvasControls({
   onDownload,
   onFitToCanvas,
   disabled = false,
-  className = ''
+  className = '',
+  productType = 'stickers', // 'stickers', 'magnet', 'fridge_magnet'
+  orientation = 'auto', // 'auto', 'horizontal', 'vertical' - for fridge magnets
+  onOrientationChange
 }) {
+  const isFridgeMagnet = productType === 'fridge_magnet';
 
   // Handle rotation
   const rotateClockwise = () => {
@@ -53,7 +60,8 @@ export default function CanvasControls({
     icon: Icon,
     active = false,
     variant = 'default',
-    disableOverride = null
+    disableOverride = null,
+    children
   }) => {
     const isDisabled = typeof disableOverride === 'boolean' ? disableOverride : disabled;
     return (
@@ -74,7 +82,8 @@ export default function CanvasControls({
           }
         `}
       >
-        <Icon className="w-5 h-5" />
+        {Icon && <Icon className="w-5 h-5" />}
+        {children}
       </motion.button>
     );
   };
@@ -90,48 +99,72 @@ export default function CanvasControls({
         ${className}
       `}
     >
-      {/* Shape Selection */}
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide mr-1">
-          Shape
-        </span>
+      {/* Shape Selection - Only for stickers and die-cut magnets */}
+      {!isFridgeMagnet && (
+        <>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide mr-1">
+              Shape
+            </span>
 
-        <div className="flex gap-1">
-          <ControlButton
-            onClick={() => onShapeChange?.('square')}
-            title="Square/Rectangle die cut"
-            icon={Square}
-            active={shape === 'square'}
-            disableOverride={false}
-          />
-          
-          <ControlButton
-            onClick={() => onShapeChange?.('round')}
-            title="Round die cut"
-            icon={Circle}
-            active={shape === 'round'}
-            disableOverride={false}
-          />
-          
-          <ControlButton
-            onClick={() => onShapeChange?.('custom')}
-            title="Custom die cut (follows image contour)"
-            icon={Shapes}
-            active={shape === 'custom'}
-            disableOverride={false}
-          />
-        </div>
-        
-        {/* Shape Info */}
-        {shape === 'custom' && (
-          <div className="ml-2 text-xs text-amber-600 font-medium max-w-[200px]">
-            Cut follows your design shape (transparent PNG recommended)
+            <div className="flex gap-1">
+              <ControlButton
+                onClick={() => onShapeChange?.('square')}
+                title="Square/Rectangle die cut"
+                icon={Square}
+                active={shape === 'square'}
+                disableOverride={false}
+              />
+
+              <ControlButton
+                onClick={() => onShapeChange?.('round')}
+                title="Round die cut"
+                icon={Circle}
+                active={shape === 'round'}
+                disableOverride={false}
+              />
+
+              <ControlButton
+                onClick={() => onShapeChange?.('custom')}
+                title="Custom die cut (follows image contour)"
+                icon={Shapes}
+                active={shape === 'custom'}
+                disableOverride={false}
+              />
+            </div>
+
+            {/* Shape Info */}
+            {shape === 'custom' && (
+              <div className="ml-2 text-xs text-amber-600 font-medium max-w-[200px]">
+                Cut follows your design shape (transparent PNG recommended)
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Divider */}
-      <div className="h-8 w-px bg-gray-200" />
+          {/* Divider */}
+          <div className="h-8 w-px bg-gray-200" />
+        </>
+      )}
+
+      {/* Fridge Magnet Info - Show fixed dimensions info */}
+      {isFridgeMagnet && (
+        <>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide mr-1">
+              Format
+            </span>
+            <div className="px-3 py-1.5 bg-soft-sky text-cool-blue rounded-lg text-sm font-medium">
+              Fixed Rectangle
+            </div>
+            <span className="text-xs text-gray-500 ml-1">
+              (size selected above)
+            </span>
+          </div>
+
+          {/* Divider */}
+          <div className="h-8 w-px bg-gray-200" />
+        </>
+      )}
 
       {/* Rotation Controls */}
       <div className="flex items-center gap-2">
@@ -141,13 +174,13 @@ export default function CanvasControls({
 
         <ControlButton
           onClick={rotateCounterClockwise}
-          title="Rotate counter-clockwise (90 deg)"
+          title="Rotate counter-clockwise (90°)"
           icon={RotateCcw}
         />
 
         <ControlButton
           onClick={rotateClockwise}
-          title="Rotate clockwise (90 deg)"
+          title="Rotate clockwise (90°)"
           icon={RotateCw}
         />
 
@@ -193,7 +226,7 @@ export default function CanvasControls({
       />
 
       {disabled && (
-        <p className="text-xs text-gray-500 text-center w-full">
+        <p className="text-xs text-gray-500 text-center w-full mt-2">
           Upload an image to enable rotate, grid, fit, and download controls.
         </p>
       )}

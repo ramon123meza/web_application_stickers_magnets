@@ -9,6 +9,26 @@ import {
 } from '../../data/pricingData';
 
 /**
+ * Fridge magnet thumbnail images - one for each size
+ */
+const FRIDGE_MAGNET_IMAGES = {
+  '2x3': 'https://layout-tool-randr.s3.amazonaws.com/MGFM-Color.jpg',
+  '2.5x3.5': 'https://layout-tool-randr.s3.amazonaws.com/MGFML-Color.jpg',
+  '4.75x2': 'https://layout-tool-randr.s3.amazonaws.com/MGFMR-Color.jpg',
+  '2.5x2.5': 'https://layout-tool-randr.s3.amazonaws.com/MGFMS-Color.jpg'
+};
+
+/**
+ * Get human-friendly name for fridge magnet sizes
+ */
+const FRIDGE_MAGNET_NAMES = {
+  '2x3': 'Standard',
+  '2.5x3.5': 'Large',
+  '4.75x2': 'Rectangle',
+  '2.5x2.5': 'Square'
+};
+
+/**
  * SizeQuantitySelector - Combined selector component for size and quantity
  *
  * Features:
@@ -16,7 +36,7 @@ import {
  * - Quantity buttons/dropdown
  * - Animated highlight on selection change
  * - Disabled states during loading
- * - Fridge magnet sub-selector
+ * - Fridge magnet thumbnails and enhanced display
  */
 export default function SizeQuantitySelector({
   productType = PRODUCT_TYPES.STICKERS,
@@ -40,7 +60,7 @@ export default function SizeQuantitySelector({
   const parseSizeLabel = (size) => {
     if (size.includes('x')) {
       const parts = size.split('x');
-      return `${parts[0]}" x ${parts[1]}"`;
+      return `${parts[0]}" × ${parts[1]}"`;
     }
     return size;
   };
@@ -55,14 +75,17 @@ export default function SizeQuantitySelector({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Fridge Magnet Sub-selector */}
+      {/* Fridge Magnet Enhanced Selector */}
       {isFridgeMagnet && (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <label className="flex items-center gap-2 text-sm font-medium text-graphite">
             <Ruler className="w-4 h-4 text-cool-blue" />
-            Fridge Magnet Size
+            Select Magnet Size
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <p className="text-xs text-gray-500 -mt-1">
+            Choose from our premium fridge magnet sizes
+          </p>
+          <div className="grid grid-cols-2 gap-3">
             {FRIDGE_MAGNET_SIZES.map((size) => (
               <motion.button
                 key={size}
@@ -71,26 +94,64 @@ export default function SizeQuantitySelector({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={`
-                  relative p-3 rounded-lg border-2 text-sm font-medium
+                  relative p-3 rounded-xl border-2 text-left
                   transition-all duration-200
                   disabled:opacity-50 disabled:cursor-not-allowed
                   ${selectedSize === size
-                    ? 'border-cool-blue bg-soft-sky text-cool-blue'
-                    : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                    ? 'border-cool-blue bg-soft-sky shadow-md'
+                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
                   }
                 `}
               >
                 {selectedSize === size && (
                   <motion.span
                     layoutId="selectedFridgeSize"
-                    className="absolute top-1 right-1"
+                    className="absolute top-2 right-2"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
                   >
-                    <Check className="w-4 h-4 text-cool-blue" />
+                    <div className="w-5 h-5 bg-cool-blue rounded-full flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
                   </motion.span>
                 )}
-                {parseSizeLabel(size)}
+
+                {/* Magnet Thumbnail */}
+                <div className="w-full aspect-[4/3] mb-2 rounded-lg overflow-hidden bg-gray-100">
+                  <img
+                    src={FRIDGE_MAGNET_IMAGES[size]}
+                    alt={`${size} fridge magnet`}
+                    className="w-full h-full object-contain"
+                    loading="lazy"
+                  />
+                </div>
+
+                {/* Size Info */}
+                <div>
+                  <div className="font-semibold text-graphite text-sm">
+                    {FRIDGE_MAGNET_NAMES[size]}
+                  </div>
+                  <div className={`text-xs ${selectedSize === size ? 'text-cool-blue' : 'text-gray-500'}`}>
+                    {parseSizeLabel(size)}
+                  </div>
+                </div>
               </motion.button>
             ))}
+          </div>
+
+          {/* Currently Selected Info */}
+          <div className="bg-gray-50 rounded-lg p-3 flex items-center gap-3">
+            <img
+              src={FRIDGE_MAGNET_IMAGES[selectedSize]}
+              alt="Selected magnet"
+              className="w-12 h-12 object-contain rounded-lg bg-white border border-gray-200"
+            />
+            <div>
+              <p className="text-xs text-gray-500">Selected Size</p>
+              <p className="font-semibold text-graphite">
+                {FRIDGE_MAGNET_NAMES[selectedSize]} - {parseSizeLabel(selectedSize)}
+              </p>
+            </div>
           </div>
         </div>
       )}

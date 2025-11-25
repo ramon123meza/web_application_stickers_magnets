@@ -234,8 +234,17 @@ export default function Customizer() {
       setIsAddingToCart(false);
       setCartSuccess(true);
 
-      // Reset success message after delay
-      setTimeout(() => setCartSuccess(false), 3000);
+      // Reset success message and customizer after delay
+      setTimeout(() => {
+        setCartSuccess(false);
+        // Reset the customizer for new design
+        clearImage();
+        setInstructions('');
+        setRotation(0);
+        setShowGrid(false);
+        canvasRef.current?.reset();
+        setShowMobileOptions(false);
+      }, 2500);
 
     } catch (error) {
       orderLogger.error('Failed to add item to cart', { error: error.message }, error);
@@ -245,14 +254,17 @@ export default function Customizer() {
       alert(`Failed to add to cart: ${error.message}`);
     }
   }, [
-    hasImage, 
-    productType, 
-    selectedSize, 
-    shape, 
-    selectedQuantity, 
-    instructions, 
-    addToCart, 
-    canvasRef
+    hasImage,
+    productType,
+    selectedSize,
+    shape,
+    selectedQuantity,
+    instructions,
+    addToCart,
+    canvasRef,
+    clearImage,
+    imageDataUrl,
+    imageFile
   ]);
 
   // Get current price
@@ -516,6 +528,7 @@ export default function Customizer() {
                 onFitToCanvas={handleFitToCanvas}
                 onDownload={handleDownload}
                 disabled={!hasImage}
+                productType={productType}
               />
 
               {/* Mobile Add to Cart - Fixed at bottom */}
@@ -630,11 +643,6 @@ export default function Customizer() {
                       </div>
                       <p className="text-xs">{qualityInfo.message}</p>
                       <p className="text-xs mt-1">Resolution: ~{qualityInfo.dpi} DPI</p>
-                      {qualityInfo.wasCompressed && (
-                        <p className="text-xs mt-1">
-                          Compressed: {qualityInfo.originalSize} → {qualityInfo.processedSize}
-                        </p>
-                      )}
                     </div>
                   )}
 

@@ -153,20 +153,21 @@ export const useImageUpload = () => {
       setImageDimensions(dimensions);
       setProgress(80);
 
-      // Calculate quality
+      // Calculate quality - pass original file size for better quality assessment
       const dpi = calculateDPI(
         dimensions.width,
         dimensions.height,
         printSize.width,
         printSize.height
       );
-      const quality = getQualityIndicator(dpi);
+      const quality = getQualityIndicator(dpi, file.size);
       const newQualityInfo = {
         ...quality,
         dpi: Math.round(dpi),
         originalSize: formatFileSize(file.size),
         processedSize: formatFileSize(processedFile.size),
-        wasCompressed: file.size !== processedFile.size
+        wasCompressed: file.size !== processedFile.size,
+        originalSizeBytes: file.size
       };
       setQualityInfo(newQualityInfo);
 
@@ -358,6 +359,7 @@ export const useImageUpload = () => {
 
   /**
    * Update quality calculation for new print size
+   * Does NOT affect the loaded image - only updates quality display
    * @param {Object} printSize - Print size dimensions
    */
   const recalculateQuality = useCallback((printSize) => {
@@ -369,20 +371,22 @@ export const useImageUpload = () => {
       printSize.width,
       printSize.height
     );
-    const quality = getQualityIndicator(dpi);
+    // Pass the original file size for better quality assessment
+    const originalSizeBytes = qualityInfo?.originalSizeBytes || 0;
+    const quality = getQualityIndicator(dpi, originalSizeBytes);
     setQualityInfo(prev => prev ? {
       ...prev,
       ...quality,
       dpi: Math.round(dpi)
     } : null);
 
-    // Update warning based on quality
-    if (quality.level === 'low' || quality.level === 'acceptable') {
+    // Only show warning for low quality (acceptable is fine with designer enhancement)
+    if (quality.level === 'low') {
       setWarning(quality.message);
     } else {
       setWarning(null);
     }
-  }, [imageDimensions]);
+  }, [imageDimensions, qualityInfo?.originalSizeBytes]);
 
   /**
    * Validate a file without uploading

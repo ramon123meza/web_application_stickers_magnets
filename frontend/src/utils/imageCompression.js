@@ -566,33 +566,46 @@ export const calculateDPI = (imageWidth, imageHeight, printWidth, printHeight) =
 
 /**
  * Get quality indicator based on DPI
+ * Adjusted thresholds: 180+ DPI is considered good since designers can enhance
  * @param {number} dpi - The calculated DPI
+ * @param {number} [fileSize=0] - File size in bytes (larger files = better quality data)
  * @returns {{level: string, color: string, message: string}} Quality indicator
  */
-export const getQualityIndicator = (dpi) => {
+export const getQualityIndicator = (dpi, fileSize = 0) => {
+  const fileSizeMB = fileSize / (1024 * 1024);
+
+  // If file is large (5MB+) and DPI is decent (180+), designers can work with it
+  const hasGoodSourceData = fileSizeMB >= 5;
+
   if (dpi >= 300) {
     return {
       level: 'excellent',
       color: 'green',
       message: 'Excellent quality - Print will be crisp and clear'
     };
-  } else if (dpi >= 200) {
+  } else if (dpi >= 200 || (dpi >= 180 && hasGoodSourceData)) {
     return {
       level: 'good',
       color: 'blue',
-      message: 'Good quality - Print will look nice'
+      message: 'Good quality - Print will look great'
     };
   } else if (dpi >= 150) {
     return {
+      level: 'good',
+      color: 'blue',
+      message: 'Good quality - Our designers will optimize for best results'
+    };
+  } else if (dpi >= 100) {
+    return {
       level: 'acceptable',
       color: 'yellow',
-      message: 'Acceptable quality - Some detail loss possible'
+      message: 'Acceptable quality - May need enhancement for large prints'
     };
   } else {
     return {
       level: 'low',
       color: 'red',
-      message: 'Low quality - Image may appear blurry when printed'
+      message: 'Low resolution - Consider using a higher resolution image'
     };
   }
 };
