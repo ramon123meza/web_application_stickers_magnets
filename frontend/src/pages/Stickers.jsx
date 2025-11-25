@@ -144,7 +144,7 @@ const Stickers = () => {
                   View Details
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Link>
-                <Link to="/customize/die-cut-stickers" className="btn-secondary border-white text-white hover:bg-white hover:text-deep-indigo">
+                <Link to="/customize/die-cut-stickers" className="inline-flex items-center justify-center px-6 py-3 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-lg border-2 border-white transition-all duration-300 hover:bg-white hover:text-deep-indigo">
                   Design Your Stickers
                 </Link>
               </div>
